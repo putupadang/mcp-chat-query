@@ -1,0 +1,75 @@
+name: Deploy to Production
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  deploy-info:
+    name: Deployment Information
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Print deployment info
+        run: |
+          echo "🚀 Deploying MCP Portfolio to production"
+          echo "Tag/Ref: ${{ github.ref }}"
+          echo "Actor: ${{ github.actor }}"
+          echo ""
+          echo "📝 Deployment Steps:"
+          echo "1. Server: Deploy to Cloud Run / Railway / Heroku"
+          echo "2. App: Deploy to Vercel"
+          echo ""
+          echo "Configure these secrets in your repository:"
+          echo "- MCP_SERVER_URL (production server URL)"
+          echo "- APP_API_KEY (production API key)"
+          echo "- VERCEL_TOKEN (for Vercel deployment)"
+          echo "- CLOUD_RUN_PROJECT (for GCP Cloud Run)"
+          echo ""
+          echo "Images available at:"
+          echo "- ghcr.io/${{ github.repository }}/mcp-server:${{ github.ref_name }}"
+          echo "- ghcr.io/${{ github.repository }}/mcp-app:${{ github.ref_name }}"
+
+  # Example: Deploy to Vercel (uncomment and configure)
+  # deploy-app-vercel:
+  #   name: Deploy App to Vercel
+  #   runs-on: ubuntu-latest
+  #
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+  #
+  #     - name: Deploy to Vercel
+  #       uses: amondnet/vercel-action@v25
+  #       with:
+  #         vercel-token: ${{ secrets.VERCEL_TOKEN }}
+  #         vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+  #         vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+  #         working-directory: ./app
+  #         vercel-args: '--prod'
+
+  # Example: Deploy to Cloud Run (uncomment and configure)
+  # deploy-server-cloudrun:
+  #   name: Deploy Server to Cloud Run
+  #   runs-on: ubuntu-latest
+  #
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+  #
+  #     - name: Set up Cloud SDK
+  #       uses: google-github-actions/setup-gcloud@v1
+  #       with:
+  #         service_account_key: ${{ secrets.GCP_SA_KEY }}
+  #         project_id: ${{ secrets.CLOUD_RUN_PROJECT }}
+  #
+  #     - name: Deploy to Cloud Run
+  #       run: |
+  #         gcloud run deploy mcp-server \
+  #           --image ghcr.io/${{ github.repository }}/mcp-server:${{ github.ref_name }} \
+  #           --platform managed \
+  #           --region us-central1 \
+  #           --allow-unauthenticated \
+  #           --set-env-vars APP_API_KEY=${{ secrets.APP_API_KEY }}
