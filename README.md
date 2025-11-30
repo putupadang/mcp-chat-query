@@ -1,4 +1,4 @@
-# 🚀 MCP Portfolio - Model Context Protocol Demo
+# 🚀 MCP Chat Query - Model Context Protocol Demo
 
 [![CI/CD Pipeline](https://github.com/YOUR_USERNAME/mcp-portfolio/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/mcp-portfolio/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
