@@ -1,7 +1,6 @@
 const express = require("express");
 const { getAllTools, getTool } = require("../tools/registry");
 const { validateSchema } = require("../validators/schema-validator");
-const { checkPermission } = require("../middleware/permissions");
 const logger = require("../config/logger");
 
 const router = express.Router();

@@ -23,6 +23,7 @@ A production-ready implementation of the **Model Context Protocol (MCP)** featur
 - **Rate Limiting**: Configurable request throttling
 - **Audit Logging**: Complete tool invocation tracking
 - **Structured Logging**: Production-ready logging with Pino
+- **Database**: Prisma ORM + MongoDB (local by default)
 - **Comprehensive Tests**: Unit & integration tests with 70%+ coverage
 - **Docker Support**: Production-ready containerization
 
@@ -51,8 +52,8 @@ A production-ready implementation of the **Model Context Protocol (MCP)** featur
         │                            │                           │
         │                            ▼                           ▼
         │                    ┌──────────────┐          ┌────────────────┐
-        │                    │   Validator  │          │   Mock Data    │
-        │                    │  (AJV+Schema)│          │   Storage      │
+        │                    │   Validator  │          │   MongoDB       │
+        │                    │  (AJV+Schema)│          │   (Prisma)      │
         └───────────────────▶└──────────────┘          └────────────────┘
                API Routes            │
                                      ▼
@@ -69,6 +70,7 @@ A production-ready implementation of the **Model Context Protocol (MCP)** featur
 - Node.js 18+
 - npm or yarn
 - Docker & Docker Compose (optional)
+- MongoDB 6+ (local) or Docker (for database)
 
 ### Option 1: Run Locally
 
@@ -85,7 +87,17 @@ cd mcp-portfolio
 cd server
 npm install
 cp .env.example .env
-# Edit .env with your API key
+# Edit .env with your API key (APP_API_KEY)
+# Ensure MongoDB is running locally:
+#   - Docker:        docker compose up -d mongo
+#   - Homebrew (mac): brew services start mongodb-community
+
+# Initialize database (Prisma + MongoDB)
+npm run prisma:generate
+npm run prisma:push
+npm run prisma:seed
+
+# Start development server
 npm run dev
 # Server running on http://localhost:4000
 ```
@@ -109,6 +121,8 @@ npm run dev
 
 ### Option 2: Run with Docker
 
+MongoDB service is included in docker-compose; no local MongoDB install needed.
+
 ```bash
 # Set API key
 export APP_API_KEY=your-secret-key
@@ -127,7 +141,7 @@ docker-compose down
 
 ### Available Tools
 
-#### 1. **search_db** - Search Product Database
+#### 1. **search_db** - Search Product Database (MongoDB + Prisma)
 
 ```json
 {
@@ -140,7 +154,7 @@ docker-compose down
 }
 ```
 
-#### 2. **create_ticket** - Create Support Ticket
+#### 2. **create_ticket** - Create Support Ticket (MongoDB)
 
 ```json
 {
@@ -153,7 +167,7 @@ docker-compose down
 }
 ```
 
-#### 3. **run_query** - Execute Database Query (Admin Only)
+#### 3. **run_query** - Execute Database Query (Admin Only, Mock)
 
 ```json
 {
@@ -224,6 +238,8 @@ Current coverage: **70%+** (branches, functions, lines, statements)
 - **AJV** - JSON Schema validator
 - **Pino** - Structured logging
 - **Swagger UI** - API documentation
+- **Prisma** - ORM / Client for MongoDB
+- **MongoDB** - Document database
 - **Jest** - Testing framework
 
 ### Frontend
@@ -250,7 +266,9 @@ mcp-portfolio/
 │   │   ├── routes/        # API routes
 │   │   ├── tools/         # Tool registry & handlers
 │   │   ├── validators/    # Schema validators
+│   │   ├── db/            # Prisma client
 │   │   └── index.js       # Entry point
+│   ├── prisma/            # Prisma schema & seed
 │   ├── __tests__/         # Test suites
 │   ├── Dockerfile
 │   └── package.json

@@ -12,17 +12,69 @@ const router = express.Router();
 const decideToolUsage = (message) => {
   const lowerMessage = message.toLowerCase();
 
+  // Prefer RAG for knowledge/policy/spec queries
+  if (
+    lowerMessage.includes("battery") ||
+    lowerMessage.includes("policy") ||
+    lowerMessage.includes("return") ||
+    lowerMessage.includes("warranty") ||
+    lowerMessage.includes("manual") ||
+    lowerMessage.includes("doc") ||
+    lowerMessage.includes("spec") ||
+    lowerMessage.includes("details") ||
+    lowerMessage.includes("information") ||
+    lowerMessage.includes("context")
+  ) {
+    return {
+      shouldUseTool: true,
+      tool: "rag_query",
+      input: { query: message, topK: 3 },
+      reasoning: "User asks for knowledge/context; using RAG",
+    };
+  }
+
   // Simple heuristic-based tool selection
   if (
     lowerMessage.includes("search") ||
     lowerMessage.includes("find") ||
-    lowerMessage.includes("product")
+    lowerMessage.includes("product") ||
+    lowerMessage.includes("laptop") ||
+    lowerMessage.includes("mouse") ||
+    lowerMessage.includes("chair")
   ) {
+    const stop = new Set([
+      "search",
+      "find",
+      "for",
+      "product",
+      "products",
+      "item",
+      "items",
+      "give",
+      "me",
+      "show",
+      "list",
+      "of",
+      "all",
+      "please",
+      "the",
+      "a",
+      "an",
+      "i",
+      "want",
+      "need",
+      "looking",
+    ]);
+    const tokens = message
+      .toLowerCase()
+      .split(/[^a-z0-9]+/)
+      .filter((t) => t && !stop.has(t));
+    const q = tokens.length ? tokens.join(" ") : "laptop";
     return {
       shouldUseTool: true,
       tool: "search_db",
       input: {
-        q: message.split(" ").slice(1).join(" ") || "laptop",
+        q,
         limit: 5,
       },
       reasoning: "User wants to search products",
@@ -122,6 +174,16 @@ router.post("/agent/ask", async (req, res) => {
       response = `I've created ticket ${toolResult.ticket.id} with title "${toolResult.ticket.title}". Our team will review it shortly.`;
     } else if (decision.tool === "run_query") {
       response = `Query executed successfully. Found ${toolResult.rowCount} rows.`;
+    } else if (decision.tool === "rag_query") {
+      const items = toolResult.results || [];
+      if (items.length) {
+        const lines = items
+          .map((r) => `- ${r.content} (source: ${r.source})`)
+          .join("\n");
+        response = `Here is relevant context based on your question:\n${lines}`;
+      } else {
+        response = "No relevant context found.";
+      }
     }
 
     res.json({

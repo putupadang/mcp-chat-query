@@ -1,6 +1,7 @@
 const searchDbHandler = require("./handlers/search-db");
 const { createTicketHandler } = require("./handlers/create-ticket");
 const runQueryHandler = require("./handlers/run-query");
+const ragQueryHandler = require("./handlers/rag-query");
 
 /**
  * Tools registry with JSON Schema definitions
@@ -104,6 +105,37 @@ const tools = {
       requiresConfirmation: true,
     },
     handler: runQueryHandler,
+  },
+
+  rag_query: {
+    name: "rag_query",
+    description:
+      "Retrieve relevant context chunks using embeddings (basic RAG)",
+    schema: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description: "User query to retrieve relevant context",
+          minLength: 3,
+        },
+        topK: {
+          type: "integer",
+          description: "Number of chunks to retrieve",
+          minimum: 1,
+          maximum: 10,
+          default: 3,
+        },
+      },
+      required: ["query"],
+      additionalProperties: false,
+    },
+    metadata: {
+      cost: "medium",
+      estimatedLatency: "200ms",
+      requiredPermissions: ["admin", "user"],
+    },
+    handler: ragQueryHandler,
   },
 };
 
